@@ -1,27 +1,24 @@
 package ut.org.catrobat.jira.timesheet.servlet;
 
 import com.atlassian.jira.component.ComponentAccessor;
-import com.atlassian.jira.easymock.Mock;
+import com.atlassian.jira.mock.component.MockComponentWorker;
 import com.atlassian.sal.api.auth.LoginUriProvider;
 import com.atlassian.sal.api.user.UserKey;
 import com.atlassian.sal.api.user.UserManager;
 import com.atlassian.sal.api.user.UserProfile;
 import com.atlassian.templaterenderer.TemplateRenderer;
-import com.google.common.collect.Maps;
 import org.catrobat.jira.timesheet.activeobjects.Team;
 import org.catrobat.jira.timesheet.activeobjects.Timesheet;
 import org.catrobat.jira.timesheet.services.PermissionService;
 import org.catrobat.jira.timesheet.services.TeamService;
 import org.catrobat.jira.timesheet.services.TimesheetService;
 import org.catrobat.jira.timesheet.servlet.TimesheetServlet;
-import com.atlassian.jira.mock.component.MockComponentWorker;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Map;
 
 public class TimesheetServletTest {
 
@@ -78,7 +75,6 @@ public class TimesheetServletTest {
         Mockito.when(timeSheet.getID()).thenReturn(1);
     }
 
-    /*
     @Test
     public void testDoGet() throws Exception {
         new MockComponentWorker()
@@ -87,7 +83,7 @@ public class TimesheetServletTest {
 
         timesheetServlet.doGet(request, response);
     }
-    */
+
 
     @Test(expected = NullPointerException.class)
     public void testDoGetNullPointerException() throws Exception {

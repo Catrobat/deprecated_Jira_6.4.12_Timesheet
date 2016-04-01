@@ -25,11 +25,11 @@ import org.catrobat.jira.timesheet.activeobjects.*;
 import org.catrobat.jira.timesheet.activeobjects.impl.ConfigServiceImpl;
 import org.catrobat.jira.timesheet.services.CategoryService;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -44,16 +44,58 @@ public class ConfigServiceImplTest {
     private CategoryService cs;
     private ConfigService configurationService;
 
+    private static List<String> coordinatorListTeam1 = new ArrayList<String>();
+    private static List<String> developerListTeam1 = new ArrayList<String>();
+    private static List<String> categoryListTeam1 = new ArrayList<String>();
+    private static List<String> coordinatorListTeam2 = new ArrayList<String>();
+    private static List<String> developerListTeam2 = new ArrayList<String>();
+    private static List<String> categoryListTeam2 = new ArrayList<String>();
+
     @Before
     public void setUp() throws Exception {
         assertNotNull(entityManager);
         ao = new TestActiveObjects(entityManager);
         configurationService = new ConfigServiceImpl(ao, cs);
+
+        //Team1
+        coordinatorListTeam1.add("Ich");
+        coordinatorListTeam1.add("und");
+        coordinatorListTeam1.add("Du");
+
+
+        developerListTeam1.add("Er");
+        developerListTeam1.add("Sie");
+        developerListTeam1.add("Es");
+
+
+        categoryListTeam1.add("Testing");
+        categoryListTeam1.add("Tests");
+
+        //Team 2
+        coordinatorListTeam2.add("A");
+        coordinatorListTeam2.add("B");
+        coordinatorListTeam2.add("C");
+
+
+        developerListTeam2.add("D");
+        developerListTeam2.add("E");
+        developerListTeam2.add("F");
+
+        categoryListTeam2.add("Programming");
+        categoryListTeam2.add("Pair-Programming");
+
+        assertNotNull(configurationService.addTeam("team1", coordinatorListTeam1, developerListTeam1, categoryListTeam1));
+        assertNotNull(configurationService.addTeam("team 2", coordinatorListTeam2, developerListTeam2, categoryListTeam2));
+        ao.flushAll();
+    }
+
+    @BeforeClass
+    public static void setUpBeforeClass() throws Exception {
     }
 
     @Test
     public void testGetConfiguration() {
-        assertEquals(0, ao.find(Config.class).length);
+        assertEquals(1, ao.find(Config.class).length);
         assertNotNull(configurationService.getConfiguration());
         ao.flushAll();
         configurationService.getConfiguration();
@@ -65,9 +107,8 @@ public class ConfigServiceImplTest {
         assertTrue(configuration.getID() != 0);
         assertEquals(0, configuration.getApprovedUsers().length);
         assertEquals(0, configuration.getApprovedGroups().length);
-        assertEquals(0, configuration.getTeams().length);
+        assertEquals(2, configuration.getTeams().length);
     }
-
 
 
     @Test
@@ -97,7 +138,7 @@ public class ConfigServiceImplTest {
                 "Your Catrobat-Admins";
 
         assertNotNull(configurationService.editMail("mailFromName", "mailFrom", "[Subject] Time",
-                "[Subject] Inactive", "[Subject] Entry" ,mailDummyText, mailDummyText, mailDummyText));
+                "[Subject] Inactive", "[Subject] Entry", mailDummyText, mailDummyText, mailDummyText));
         ao.flushAll();
         config = configurationService.getConfiguration();
         assertEquals("mailFromName", config.getMailFromName());
@@ -112,47 +153,8 @@ public class ConfigServiceImplTest {
 
     @Test
     public void testAddTeam() {
-        Config config;
-
-        //Team1
-        List<String> coordinatorListTeam1 = new ArrayList<String>();
-        coordinatorListTeam1.add("Ich");
-        coordinatorListTeam1.add("und");
-        coordinatorListTeam1.add("Du");
-
-        List<String> developerListTeam1 = new ArrayList<String>();
-        developerListTeam1.add("Er");
-        developerListTeam1.add("Sie");
-        developerListTeam1.add("Es");
-
-        List<String> categoryListTeam1 = new ArrayList<String>();
-        categoryListTeam1.add("Testing");
-        categoryListTeam1.add("Tests");
-
-        //Team 2
-        List<String> coordinatorListTeam2 = new ArrayList<String>();
-        coordinatorListTeam2.add("A");
-        coordinatorListTeam2.add("B");
-        coordinatorListTeam2.add("C");
-
-        List<String> developerListTeam2 = new ArrayList<String>();
-        developerListTeam2.add("D");
-        developerListTeam2.add("E");
-        developerListTeam2.add("F");
-
-        List<String> categoryListTeam2 = new ArrayList<String>();
-        categoryListTeam2.add("Programming");
-        categoryListTeam2.add("Pair-Programming");
-
-
-        assertNotNull(configurationService.addTeam("team1", coordinatorListTeam1, developerListTeam1, categoryListTeam1));
-        assertNotNull(configurationService.addTeam("team 2", coordinatorListTeam2, developerListTeam2, categoryListTeam2));
-
-        ao.flushAll();
-        config = configurationService.getConfiguration();
+        Config config = configurationService.getConfiguration();
         assertEquals(2, config.getTeams().length);
-        assertEquals("team1", config.getTeams()[0].getTeamName());
-        assertEquals("team 2", config.getTeams()[1].getTeamName());
         assertEquals(6, config.getTeams()[0].getGroups().length);
         assertEquals(12, ao.find(Group.class).length);
         assertEquals(TeamToGroup.Role.COORDINATOR, config.getTeams()[0].getGroups()[1].getTeamToGroups()[0].getRole());
@@ -160,35 +162,46 @@ public class ConfigServiceImplTest {
         assertEquals(TeamToGroup.Role.DEVELOPER, config.getTeams()[0].getGroups()[4].getTeamToGroups()[0].getRole());
         assertEquals("B", config.getTeams()[1].getGroups()[1].getGroupName());
 
+        // Team 3
         assertNotNull(configurationService.addTeam("team3", null, null, null));
         assertNull(configurationService.addTeam(null, null, null, null));
         assertNull(configurationService.addTeam("", null, null, null));
         assertNull(configurationService.addTeam("  ", null, null, null));
+
+        final Team[] teams = configurationService.getConfiguration().getTeams();
+        assertEquals(3, teams.length);
+
+        assertTrue("team1".equals(teams[0].getTeamName()));
+        assertTrue("team 2".equals(teams[1].getTeamName()));
+        assertTrue("team3".equals(teams[2].getTeamName()));
     }
 
     @Test
     public void testEditTeamName() {
-        testAddTeam();
-        assertEquals(3, configurationService.getConfiguration().getTeams().length);
+        configurationService.addTeam("team3", null, null, null);
+
+        for (Team team :  configurationService.getConfiguration().getTeams()) {
+            System.out.println("team.getTeamName() = " + team.getTeamName());
+        }
         assertNotNull(configurationService.editTeamName("team1", "new-team"));
         ao.flushAll();
-        assertEquals(3, configurationService.getConfiguration().getTeams().length);
+        assertEquals(3,  configurationService.getConfiguration().getTeams().length);
         assertEquals("new-team", configurationService.getConfiguration().getTeams()[0].getTeamName());
 
         assertNull(configurationService.editTeamName(null, "new-name"));
         assertNull(configurationService.editTeamName("team1", "new-name"));
         ao.flushAll();
-        assertEquals(3, configurationService.getConfiguration().getTeams().length);
+        assertEquals(3,  configurationService.getConfiguration().getTeams().length);
 
         assertNull(configurationService.editTeamName("new-team", "team 2"));
         assertNull(configurationService.editTeamName("new-team", null));
         ao.flushAll();
-        assertEquals(3, configurationService.getConfiguration().getTeams().length);
+        assertEquals(3,  configurationService.getConfiguration().getTeams().length);
     }
 
     @Test
     public void testRemoveTeam() {
-        testAddTeam();
+        configurationService.addTeam("team3", null, null, null);
         assertEquals(3, configurationService.getConfiguration().getTeams().length);
         assertNotNull(configurationService.removeTeam("team1"));
         ao.flushAll();
@@ -202,7 +215,7 @@ public class ConfigServiceImplTest {
 
     @Test
     public void testGetGroupsForRole() {
-        testAddTeam();
+        configurationService.addTeam("team3", null, null, null);
         assertEquals(3, configurationService.getConfiguration().getTeams().length);
 
         List<String> groupList = configurationService.getGroupsForRole("team1", TeamToGroup.Role.COORDINATOR);
