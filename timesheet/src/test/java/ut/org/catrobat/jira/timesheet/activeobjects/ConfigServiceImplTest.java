@@ -197,6 +197,9 @@ public class ConfigServiceImplTest {
         assertNull(configurationService.editTeamName("new-team", null));
         ao.flushAll();
         assertEquals(3,  configurationService.getConfiguration().getTeams().length);
+
+        configurationService.removeTeam("team3");
+        assertEquals(2, configurationService.getConfiguration().getTeams().length);
     }
 
     @Test
@@ -211,6 +214,9 @@ public class ConfigServiceImplTest {
         assertNull(configurationService.removeTeam("blob"));
         ao.flushAll();
         assertEquals(2, configurationService.getConfiguration().getTeams().length);
+
+        configurationService.removeTeam("team3");
+        assertEquals(2, configurationService.getConfiguration().getTeams().length);
     }
 
     @Test
@@ -223,6 +229,9 @@ public class ConfigServiceImplTest {
         assertEquals("Ich", groupList.get(0));
         assertEquals("und", groupList.get(1));
         assertEquals("Du", groupList.get(2));
+
+        configurationService.removeTeam("team3");
+        assertEquals(2, configurationService.getConfiguration().getTeams().length);
     }
 
     @Test
